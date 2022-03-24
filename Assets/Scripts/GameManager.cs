@@ -13,7 +13,8 @@ public class GameManager : MonoBehaviour
     private float xHalfScreenSize;
     private float yHalfScreenSize;
 
-    public StageManager stageManager;
+    public StageManager stageManagerPrefab;
+    private StageManager stageManager;
 
     private BattleManager battleManager;
     private int currentSceneNumber;
@@ -72,7 +73,7 @@ public class GameManager : MonoBehaviour
             battleManagerObject.name = "Battle Manager";
             battleManagerObject.AddComponent<BattleManager>();
             battleManager = battleManagerObject.GetComponent<BattleManager>();
-            battleManager.battleEndDelegate += BattleToStageScene;
+            battleManager.battleEndDelegate += StageEnd;
         }
         else
         {
@@ -82,14 +83,25 @@ public class GameManager : MonoBehaviour
 
     private void GenerateStageManager()
     {
-        if(!stageManager)
+        if (!stageManager)
         {
-            stageManager = Instantiate(stageManager);
+            stageManager = Instantiate(stageManagerPrefab);
             stageManager.gameObject.name = "Stage Manager";
+
+            yHalfScreenSize = Camera.main.orthographicSize;
+            xHalfScreenSize = yHalfScreenSize * Camera.main.aspect;
+
+            // xHalf에다 step을 나눠서 간격 구하기, yHalf에다가 start를 나눠서 간격 구하기
+            width = (xHalfScreenSize * 2) / stepCount;
+            height = (yHalfScreenSize * 2) / startCount;
+
+            stageManager.gameObject.transform.position = new Vector3(-xHalfScreenSize, -yHalfScreenSize, 0f);
+            stageManager.GenerateStage(startCount, stepCount, height, width);
         }
         else
         {
             Debug.Log("Stage Manager 이미 존재");
+            stageManager.ActivateStages();
         }
     }
 
@@ -112,7 +124,7 @@ public class GameManager : MonoBehaviour
 
                     SceneManager.LoadScene("BattleScene");
 
-                    battleManager.GenerateBattle(clickedStage.StageInfo);
+                    battleManager.GenerateBattle(clickedStage.StageInfo._step);
                 }
             }
         }
@@ -123,6 +135,18 @@ public class GameManager : MonoBehaviour
         Debug.Log("Button Clicked");
         stageManager.InactivateStages();
         SceneManager.LoadScene("StartScene");
+    }
+
+    private void StageEnd((bool _isCompleted, int _step) _stageInfo)
+    {
+        if(_stageInfo._step == stageManager.stageList.Count-1 && _stageInfo._isCompleted == true)
+        {
+            SceneManager.LoadScene("EndScene");
+        }
+        else
+        {
+            BattleToStageScene();
+        }
     }
 
     private void BattleToStageScene()
@@ -136,15 +160,11 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("StageSelectScene");
         GenerateStageManager();
         GenerateBattleManager();
-        
-        yHalfScreenSize = Camera.main.orthographicSize;
-        xHalfScreenSize = yHalfScreenSize * Camera.main.aspect;
+    }
 
-        // xHalf에다 step을 나눠서 간격 구하기, yHalf에다가 start를 나눠서 간격 구하기
-        width = (xHalfScreenSize * 2) / stepCount;
-        height = (yHalfScreenSize * 2) / startCount;
-
-        stageManager.gameObject.transform.position = new Vector3(-xHalfScreenSize, -yHalfScreenSize, 0f);
-        stageManager.GenerateStage(startCount, stepCount, height, width);
+    public void EndToStart()
+    {
+        SceneManager.LoadScene("StartScene");
+        stageManager = null;
     }
 }

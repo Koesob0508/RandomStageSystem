@@ -22,4 +22,9 @@ public class ButtonDelegator : MonoBehaviour
     {
         BattleManager.Instance.Uncomplete();
     }
+
+    public void EndToStart()
+    {
+        GameManager.Instance.EndToStart();
+    }
 }

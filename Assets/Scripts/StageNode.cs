@@ -118,9 +118,9 @@ public class StageNode : MonoBehaviour
         get { return this.isPassPoint; }
     }
 
-    public int StageInfo
+    public (bool _isComplete, int _step) StageInfo
     {
-        get { return this.step; }
+        get { return (this.isCompleted, this.step); }
     }
 
     public Vector2 Position

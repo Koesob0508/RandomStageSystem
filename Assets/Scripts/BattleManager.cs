@@ -6,8 +6,8 @@ using UnityEngine;
 public class BattleManager : MonoBehaviour
 {
     private static BattleManager instance = null;
-    private StageNode CurrentStageNode;
-    public delegate void BattleEnd();
+    private StageNode currentStageNode;
+    public delegate void BattleEnd((bool _isComplete, int _step) _stageInfo);
     public event BattleEnd battleEndDelegate;
     public static BattleManager Instance
     {
@@ -40,7 +40,7 @@ public class BattleManager : MonoBehaviour
 
     public void LinkeToStageNode(StageNode _stageNode)
     {
-        CurrentStageNode = _stageNode;
+        currentStageNode = _stageNode;
     }
 
     public void GenerateBattle(int _stageInfo)
@@ -52,15 +52,15 @@ public class BattleManager : MonoBehaviour
     {
         Debug.Log("Complete");
         
-        CurrentStageNode.Complete();
-        StageManager.Instance.ClearStep(CurrentStageNode.Step);
+        currentStageNode.Complete();
+        StageManager.Instance.ClearStep(currentStageNode.Step);
         Debug.Log(StageManager.Instance.stageList.Count);
-        battleEndDelegate();
+        battleEndDelegate(currentStageNode.StageInfo);
     }
 
     public void Uncomplete()
     {
         Debug.Log("UnComplete");
-        battleEndDelegate();
+        battleEndDelegate(currentStageNode.StageInfo);
     }
 }

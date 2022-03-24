@@ -4,16 +4,24 @@ using UnityEngine;
 
 public partial class StageManager : MonoBehaviour
 {
+    [System.Serializable]
     public class Stages
     {
-        List<StageNode> stages;
+        public List<StageNode> stages;
+
+        public Stages()
+        {
+            stages = new List<StageNode>();
+        }
     }
 }
+
+[System.Serializable]
 public partial class StageManager : MonoBehaviour
 {
     private static StageManager instance = null;
     private List<List<Seed>> seedList;
-    public List<List<StageNode>> stageList;
+    public List<Stages> stageList;
     public StageNode stageNodeObject;
     private float stageNodeScale;
     public static StageManager Instance
@@ -141,13 +149,13 @@ public partial class StageManager : MonoBehaviour
         return _seedList;
     }
 
-    private List<List<StageNode>> GenerateNode(List<List<Seed>> _seedList)
+    private List<Stages> GenerateNode(List<List<Seed>> _seedList)
     {
-        List<List<StageNode>> resultList = new List<List<StageNode>>();
+        List<Stages> resultList = new List<Stages>();
 
         foreach (List<Seed> stepList in _seedList)
         {
-            List<StageNode> stageStepList = new List<StageNode>();
+            Stages stageStepList = new Stages();
 
             foreach (Seed seed in stepList)
             {
@@ -163,7 +171,8 @@ public partial class StageManager : MonoBehaviour
                 // Seed를 이용해서 StageNode 초기화
                 stageNode.Initialize(step);
 
-                stageStepList.Add(stageNode);
+                stageStepList.stages.Add(stageNode);
+
                 if (seed.isMerged())
                 {
                     stageNode.IsMerged = seed.isMerged();
@@ -177,7 +186,7 @@ public partial class StageManager : MonoBehaviour
         return resultList;
     }
 
-    private List<List<StageNode>> SetPath(List<List<StageNode>> _stageList, List<List<Seed>> _seedList)
+    private List<Stages> SetPath(List<Stages> _stageList, List<List<Seed>> _seedList)
     {
         foreach (List<Seed> stepList in _seedList)
         {
@@ -196,7 +205,7 @@ public partial class StageManager : MonoBehaviour
                         int resultIndex = _seedList[nextStep][targetIndex].GetResultPointer();
 
                         // 동일 step, index의 stageNode를 찾아서 위에서 구한 최종 index를 더해준다.
-                        _stageList[currentStep][currentIndex].AddNextStage(_stageList[nextStep][resultIndex]);
+                        _stageList[currentStep].stages[currentIndex].AddNextStage(_stageList[nextStep].stages[resultIndex]);
                     }
                 }
             }
@@ -227,9 +236,9 @@ public partial class StageManager : MonoBehaviour
 
     public void InactivateStages()
     {
-        foreach (List<StageNode> stages in stageList)
+        foreach (Stages stages in stageList)
         {
-            foreach (StageNode stage in stages)
+            foreach (StageNode stage in stages.stages)
             {
                 stage.gameObject.SetActive(false);
             }
@@ -238,9 +247,9 @@ public partial class StageManager : MonoBehaviour
 
     public void ActivateStages()
     {
-        foreach (List<StageNode> stages in stageList)
+        foreach (Stages stages in stageList)
         {
-            foreach (StageNode stage in stages)
+            foreach (StageNode stage in stages.stages)
             {
                 if (!stage.IsMerged)
                 {
@@ -252,9 +261,9 @@ public partial class StageManager : MonoBehaviour
 
     public void ClearStep(int _step)
     {
-        foreach (List<StageNode> stages in stageList)
+        foreach (Stages stages in stageList)
         {
-            foreach (StageNode stage in stages)
+            foreach (StageNode stage in stages.stages)
             {
                 if (stage.Step == _step)
                 {
